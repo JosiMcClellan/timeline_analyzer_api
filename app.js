@@ -19,6 +19,6 @@ app.use((req, res, next) => {
 app.use('/api/v1/users', userRouter);
 app.use((req, res) => {
   res.status(404).json({ error: `no route matches ${req.method} ${req.path}` });
-})
+});
 
 module.exports = app;

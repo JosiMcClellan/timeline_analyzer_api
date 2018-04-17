@@ -7,7 +7,7 @@ exports.up = function(knex, Promise) {
     users.string('avatarUrl').notNullable()
     users.string('githubId').notNullable()
     users.string('githubAccessToken').notNullable()
-    users.string('githubRefreshToken').notNullable()
+    users.text('githubRefreshToken').notNullable()
     users.string('herokuAccessToken')
     users.string('herokuRefreshToken')
   })

@@ -13,7 +13,7 @@ const filter = require('./filterParams')(
   'herokuRefreshToken',
 );
 
-router.post('/', async (req, res, next) => {
+router.post('/', async(req, res) => {
   const params = filter(req.body);
   let user = await userTable.find(params.githubId);
   if (!user) user = await userTable.create(params);
