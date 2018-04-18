@@ -2,11 +2,13 @@ const https = require('https');
 const guzzle = require('./guzzleJsonStream');
 
 module.exports = {
+
   tradeCodeForToken(code) {
+    const { GITHUB_ID: id, GITHUB_SECRET: secret } = process.env;
     return this.request({
       method: 'POST',
       hostname: 'github.com',
-      path: `/login/oauth/access_token?code=${code}&client_secret=???`,
+      path: `/login/oauth/access_token?code=${code}&client_id=${id}&client_secret=${secret}`,
       headers: {
         Accept: 'application/json',
       }
@@ -21,7 +23,7 @@ module.exports = {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'timeline-analyzer-api'
+        'User-Agent': 'timeline-analyzer'
       },
       body: { query: this.userBasicDataQuery }
     });

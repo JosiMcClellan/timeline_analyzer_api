@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+
+/**
+ * keep 'dotenv' up top, please!
+ */
+var error = require('dotenv-safe').config().error;
+if (error) throw error;
+
+
 /**
  * Module dependencies.
  */

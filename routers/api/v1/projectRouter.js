@@ -3,17 +3,18 @@ const router = express.Router();
 
 const projectsTable = require('../../../tables/projectsTable');
 const filter = require('./filterParams')(
-  'githubName',
-  'githubId',
+  'name',
+  'id',
   'hasTravis',
   'herokuSlug'
 )
 
 router.post('/', (req, res) => {
+  console.log(req.body)
   const userId = req.body.userId;
-  const params = filter(req.body);
+  const params = filter(req.body.repo);
   projectsTable.create(userId, params).then(project => {
-    res.status(201).json(project)
+    res.status(201).json(project[0])
   })
 })
 

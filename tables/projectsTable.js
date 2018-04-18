@@ -1,6 +1,6 @@
 var table = require('./table')
 
-class Project {
+const projectsTable = {
   create(userId, params) {
     return table.transaction(step => {
       return step('projects').insert(params).returning('*')
@@ -24,4 +24,4 @@ class Project {
   //   ))
   // },
 
-module.exports = Project
+module.exports = projectsTable
