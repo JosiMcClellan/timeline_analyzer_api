@@ -2,7 +2,7 @@ const table = require('./table');
 
 const userTable = {
   create(params) {
-    return table('users').insert(params).returning('*');
+    return table('users').insert(params).returning('*').then(stuff => stuff[0]);
   },
 
   findBy(column, value) {

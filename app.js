@@ -20,4 +20,9 @@ app.use((req, res) => {
   res.status(404).json({ error: `no route matches ${req.method} ${req.path}` });
 });
 
+app.use((err, req, res, next) => {
+  console.log(error);
+  next();
+})
+
 module.exports = app;

@@ -4,8 +4,7 @@
 /**
  * keep 'dotenv' up top, please!
  */
-var error = require('dotenv-safe').config().error;
-if (error) throw error;
+var error = require('dotenv-safe').config()
 
 
 /**

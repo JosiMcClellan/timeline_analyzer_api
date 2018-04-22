@@ -1,27 +1,28 @@
 var table = require('./table')
 
 const projectsTable = {
-  create(userId, params) {
-    return table.transaction(step => {
-      return step('projects').insert(params).returning('*')
-        .then(project => {
-          step('project_users').insert({ userId, projectId: project.id });
-          return project;
-        });
-    });
+  create(params) {
+    return table('projects').insert(params).returning('*').then(stuff => stuff[0]);
+  },
+
+  findBy(column, value) {
+    return table('projects').where(`projects.${column}`, value)
+      .leftJoin('project_users', 'projects.id', 'project_users.projectId')
+      .leftJoin('users', 'users.id', 'project_users.userId')
+      .groupBy('projects.id')
+      .first(['projects.*', this.usersArray()])
+  },
+
+  usersArray() {
+    return table.raw(`
+      ARRAY_TO_JSON(
+        ARRAY_REMOVE(
+          ARRAY_AGG(users.*)
+        , NULL)
+      ) AS users
+    `)
   }
+
 }
-  // ANOTHER FORM IF THAT DOESN'T WORK
-  // create(userId, params) {
-  //   table.transaction(trx => (
-  //     table('projects').insert(params).transacting(trx).returning('*')
-  //       .then(project => {
-  //         table('project_users').insert({userId, project.id }).transacting(trx)
-  //         return project
-  //       })
-  //       .then(trx.commit)
-  //       .catch(trx.rollback)
-  //   ))
-  // },
 
 module.exports = projectsTable

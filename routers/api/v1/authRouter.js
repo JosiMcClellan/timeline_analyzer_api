@@ -12,13 +12,16 @@ router.post('/', async(req, res) => {
 
   // check for existing user
   const found = await usersTable.findBy('id', raw.id);
+  console.log({found})
   if (found) {
     const { projects, ...user } = found
     user.accessToken = access_token;
     return res.status(200).json({ user, projects });
   }
 
+  // otherwise make a new one
   const created = await usersTable.create(raw);
+  console.log({created})
   created.accessToken = access_token;
   return res.status(201).json({ user: created, projects: [] });
 

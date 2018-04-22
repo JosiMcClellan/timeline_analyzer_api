@@ -32,7 +32,6 @@ module.exports = {
   request({ body, ...config }) {
     body = JSON.stringify(body) || ''
     config.headers['Content-Length'] = Buffer.byteLength(body)
-
     return new Promise((resolve) => {
       https.request(config,
         (responseStream) => guzzle(responseStream).then(resolve)

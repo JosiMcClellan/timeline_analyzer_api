@@ -5,6 +5,9 @@
   "scripts": {
     "start": "node ./bin/www",
     "start:dev": "nodemon ./bin/www",
+    "db:migrate": "knex migrate:latest",
+    "db:rollback": "knex migrate:rollback",
+    "db:reset": "yarn db:rollback && yarn db:migrate",
     "seed": "knex seed:run",
     "test": "NODE_ENV=test mocha --exit"
   },

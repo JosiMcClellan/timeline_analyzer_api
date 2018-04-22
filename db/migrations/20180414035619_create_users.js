@@ -4,7 +4,6 @@ exports.up = function(knex, Promise) {
     users.string('name').notNullable()
     users.string('email').notNullable()
     users.string('avatarUrl').notNullable()
-    // users.string('accessToken').notNullable()
     users.timestamps(false, true)
   });
 };
