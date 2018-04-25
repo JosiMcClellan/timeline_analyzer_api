@@ -1,7 +1,6 @@
 const fetchHttpsJson = require('./fetchHttpsJson');
 const makeFilter = require('../utils/makeFilter');
-
-const rawDeployFilter = makeFilter('status', 'created_at', 'id');
+const users = require('../tables/usersTable');
 
 module.exports = {
   getAccessTokens(grantType, grantField, grant) {
@@ -16,12 +15,13 @@ module.exports = {
     });
   },
 
-  freshAccessToken(user) {
+  async freshAccessToken(user) {
     const { id, herokuAccess, herokuRefresh, herokuExpiry } = user;
     if (herokuExpiry > Date.now()) return herokuAccess;
-    const { access, expiry } = this.refresh(herokuRefresh);
-    usersTable.update(id, { herokuAccess: access, herokuRefresh: refresh })
-      .then(updated => { if (!updated) console.warn('failed to update heroku access') })
+    const fresh = await this.refresh(herokuRefresh);
+    if (fresh.message) throw fresh.message;
+    users.update(id, { herokuAccess: fresh.access, herokuExpiry: fresh.expiry })
+      .then(updated => updated || console.warn('failed to update heroku access'))
     return access;
   },
 
@@ -34,19 +34,21 @@ module.exports = {
   },
 
   async getDeploys(project, user) {
-    const { herokuSlug: slug, herokuOwnerId: ownerId } = project;
-    if (!slug) return [];
+    const { herokuOwnerId, herokuSlug } = project;
+    if (!herokuSlug) return [];
     let owner = user;
-    if (user.id !== ownerId) owner = await usersTable.first(ownerId);
+    if (user.id !== herokuOwnerId) owner = await usersTable.first(ownerId);
     if (!owner) throw 404;
     const token = this.freshAccessToken(owner)
     return fetchHttpsJson({
       hostname: 'api.heroku.com',
-      path: `/apps/${slug}/builds`,
+      path: `/apps/${herokuSlug}/builds`,
       headers: {
         Accept: 'application/vnd.heroku+json; version=3',
         Authorization: `Bearer ${token}`,
       }
-    }).then(deploys => deploys.map(rawDeployFilter));
-  }
+    }).then(deploys => deploys.map(this.cleanDeploy));
+  },
+
+  cleanDeploy: makeFilter('status', 'created_at', 'id')
 }
