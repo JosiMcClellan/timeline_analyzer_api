@@ -37,12 +37,13 @@ module.exports.post('/', async(req, res) => {
 });
 
 module.exports.get('/:project_id', async(req, res, next) => {
-  const { project, user } = req;
+  const project = filter(req.project);
   Promise.all([
-    heroku.getDeploys(project, user)
-  ]).then(([deploys]) => {
-    res.status(200).json({ deploys, project: filter(req.project) });
-  }).catch(next)
+    heroku.getDeploys(project, req.user),
+    travis.getBuilds(project, req.user)
+  ]).then(([deploys, builds]) => {
+    res.status(200).json({ deploys, builds, project });
+  }).catch(next);
 });
 
 module.exports.patch('/:project_id/heroku', async(req, res) => {
