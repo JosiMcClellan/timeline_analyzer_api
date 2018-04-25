@@ -1,11 +1,9 @@
-const https = require('https');
-const guzzle = require('./guzzleJsonStream');
+const fetchHttpsJson = require('./fetchHttpsJson');
 
 module.exports = {
-
   tradeCodeForToken(code) {
     const { GITHUB_ID: id, GITHUB_SECRET: secret } = process.env;
-    return this.request({
+    return fetchHttpsJson({
       method: 'POST',
       hostname: 'github.com',
       path: `/login/oauth/access_token?code=${code}&client_id=${id}&client_secret=${secret}`,
@@ -16,7 +14,7 @@ module.exports = {
   },
 
   getUserData(token) {
-    return this.request({
+    return fetchHttpsJson({
       method: 'POST',
       hostname: 'api.github.com',
       path: `/graphql`,
@@ -26,16 +24,6 @@ module.exports = {
         'User-Agent': 'timeline-analyzer'
       },
       body: { query: this.userBasicDataQuery }
-    });
-  },
-
-  request({ body, ...config }) {
-    body = JSON.stringify(body) || ''
-    config.headers['Content-Length'] = Buffer.byteLength(body)
-    return new Promise((resolve) => {
-      https.request(config,
-        (responseStream) => guzzle(responseStream).then(resolve)
-      ).end(body)
     });
   },
 

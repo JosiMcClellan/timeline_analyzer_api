@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
     projects.string('nameWithOwner').notNullable()
     projects.string('travisId')
     projects.string('herokuSlug')
+    projects.string('herokuOwnerId')
     projects.timestamps(false, true)
   });
 };
