@@ -2,11 +2,23 @@ const table = require('./table');
 
 const userTable = {
   create(params) {
-    return table('users').insert(params).returning('*');
+    return table('users').insert(params).returning('*').then(stuff => stuff[0]);
   },
 
-  findBy(column, value) {
-    return table('users').where(`users.${column}`, value)
+  update(id, fields) {
+    return this.find(id).update(fields).returning('*').then(stuff => stuff[0]);
+  },
+
+  find(id) {
+    return table('users').where('users.id', id)
+  },
+
+  first(id) {
+    return this.find(id).first('*')
+  },
+
+  withProjects(id) {
+    return this.find(id)
       .first(['users.*', this.projectsArray()])
       .leftJoin('project_users', 'users.id', 'project_users.userId')
       .leftJoin('projects', 'projects.id', 'project_users.projectId')

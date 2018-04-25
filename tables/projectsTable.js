@@ -1,27 +1,46 @@
-var table = require('./table')
+const projectUsers = require('./projectUsersTable')
+const table = require('./table')
 
-class Project {
-  create(userId, params) {
-    return table.transaction(step => {
-      return step('projects').insert(params).returning('*')
-        .then(project => {
-          step('project_users').insert({ userId, projectId: project.id });
-          return project;
-        });
-    });
-  }
-}
-  // ANOTHER FORM IF THAT DOESN'T WORK
-  // create(userId, params) {
-  //   table.transaction(trx => (
-  //     table('projects').insert(params).transacting(trx).returning('*')
-  //       .then(project => {
-  //         table('project_users').insert({userId, project.id }).transacting(trx)
-  //         return project
-  //       })
-  //       .then(trx.commit)
-  //       .catch(trx.rollback)
-  //   ))
+const projectsTable = {
+  create(params) {
+    return table('projects').insert(params).returning('*').then(stuff => stuff[0]);
+  },
+
+  find(id) {
+    return table('projects').where('projects.id', id)
+  },
+
+  first(id) {
+    return this.find(id).first('*');
+  },
+
+  forUser(projectId, userId) {
+    return this.first(projectId)
+    .whereExists(projectUsers.find(projectId, userId))
+  },
+
+  update(id, fields) {
+    return this.find(id).update(fields).returning('*').then(stuff => stuff[0]);
+  },
+
+  // withUsers(query) {
+  //   return query
+  //     .leftJoin('project_users', 'projects.id', 'project_users.projectId')
+  //     .leftJoin('users', 'users.id', 'project_users.userId')
+  //     .groupBy('projects.id')
+  //     .first(['projects.*', this.usersArray()])
   // },
 
-module.exports = Project
+  // usersArray() {
+  //   return table.raw(`
+  //     ARRAY_TO_JSON(
+  //       ARRAY_REMOVE(
+  //         ARRAY_AGG(users.*)
+  //       , NULL)
+  //     ) AS users
+  //   `)
+  // }
+
+}
+
+module.exports = projectsTable
