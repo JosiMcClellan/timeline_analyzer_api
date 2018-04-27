@@ -12,17 +12,25 @@ module.exports = {
       headers: {
         Accept: 'application/json',
       },
-    });
+    }).then(this.cleanTokens);
+  },
+
+  cleanTokens(raw) {
+    const milliseconds = (raw.expires_in - 60) * 1000;
+    return {
+      herokuAccess: raw.access_token,
+      herokuRefresh: raw.refresh_token,
+      herokuExpiry: Date.now() + milliseconds
+    };
   },
 
   async freshAccessToken(user) {
-    const { id, herokuAccess, herokuRefresh, herokuExpiry } = user;
-    if (herokuExpiry > Date.now()) return herokuAccess;
-    const fresh = await this.refresh(herokuRefresh);
+    if (user.herokuExpiry > Date.now()) return user.herokuAccess;
+    const fresh = await this.refresh(user.herokuRefresh);
     if (fresh.message) throw fresh.message;
-    users.update(id, { herokuAccess: fresh.access, herokuExpiry: fresh.expiry })
+    users.update(user.id, fresh)
       .then(updated => updated || console.warn('failed to update heroku access'))
-    return access;
+    return fresh;
   },
 
   tradeCodeForTokens(code) {
@@ -47,7 +55,7 @@ module.exports = {
         Accept: 'application/vnd.heroku+json; version=3',
         Authorization: `Bearer ${token}`,
       }
-    }).then(deploys => deploys.map(this.cleanDeploy));
+    }).then(deploys => deploys.map && deploys.map(this.cleanDeploy));
   },
 
   cleanDeploy: makeFilter('status', 'created_at', 'id')

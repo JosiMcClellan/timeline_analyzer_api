@@ -47,11 +47,11 @@ module.exports.get('/:project_id', async(req, res, next) => {
 });
 
 module.exports.patch('/:project_id/heroku', async(req, res) => {
-  const { project, user, body: { herokuSlug } } = req;
-  if (!herokuSlug) return next(400);
-  const [deploys, updated] = await Promise.all([
-    heroku.getDeploys(project, user),
-    projects.update(project.id, { herokuSlug, herokuOwnerId: user.id })
+  const herokuSlug = req.body.herokuSlug || null;
+  const herokuOwnerId = herokuSlug ? req.user.id : null;
+  const [updated, deploys] = await Promise.all([
+    projects.update(req.project.id, { herokuSlug, herokuOwnerId }),
+    heroku.getDeploys({ ...req.project, herokuSlug, herokuOwnerId }, req.user)
   ]);
   if (!updated) return next(422);
   res.status(201).json({ updated, deploys });
